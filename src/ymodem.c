@@ -33,7 +33,12 @@ typedef struct
 	uint16_t CRC;
 } SmallPacket;
 
-void YModem_Init(YModem* modem, InterfaceRead readFunc, InterfaceWrite writeFunc);
+typedef enum
+{
+
+} YModemTransferStates;
+
+void YModem_Init(YModem* modem, InterfaceRead readFunc, InterfaceWrite writeFunc)
 {
 	modem->Read	 = readFunc;
 	modem->Write = writeFunc;
@@ -41,4 +46,4 @@ void YModem_Init(YModem* modem, InterfaceRead readFunc, InterfaceWrite writeFunc
 
 YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc) { return OK; }
 
-YModemReturn YModem_Transmit(YModem* modem, FileRead readFunc) { return OK; }
+YModemReturn YModem_Transmit(YModem* modem, FileRead readFunc, uint32_t size) { return OK; }

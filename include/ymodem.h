@@ -22,6 +22,6 @@ typedef struct
 
 void YModem_Init(YModem* modem, InterfaceRead readFunc, InterfaceWrite writeFunc);
 YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc);
-YModemReturn YModem_Transmit(YModem* modem, FileRead readFunc);
+YModemReturn YModem_Transmit(YModem* modem, FileRead readFunc, uint32_t size);
 
 #endif
