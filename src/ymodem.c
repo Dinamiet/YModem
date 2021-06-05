@@ -1,6 +1,15 @@
 #include "ymodem.h"
 
-void YModem_Init()
-{
-	return;
-}
+#define STX 0x02 // 1024 byte data block
+#define SOH 0x01 // 128 byte data block
+#define EOT 0x04 // End of transfer
+#define ACK 0x06
+#define NAK 0x15
+#define CAN 0x18 // Cancel transmission
+#define C	0x43 // Ready
+
+#define RETRIES		  10
+#define SHORT_TIMEOUT 1	 // 1 seconds
+#define LONG_TIMEOUT  10 // 10 seconds
+
+void YModem_Init() { return; }
