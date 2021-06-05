@@ -3,14 +3,13 @@
 #define STX 0x02 // 1024 byte data block
 #define SOH 0x01 // 128 byte data block
 #define EOT 0x04 // End of transfer
-#define ACK 0x06
-#define NAK 0x15
+#define ACK 0x06 // Acknownledged, continue transfer
+#define NAK 0x15 // Not Acknownledged, retry transfer
 #define CAN 0x18 // Cancel transmission
-#define C	0x43 // Ready
+#define C	0x43 // Ready to receive data
 
-#define RETRIES		  10
-#define SHORT_TIMEOUT 1	 // 1 seconds
-#define LONG_TIMEOUT  10 // 10 seconds
+#define RETRIES 10 // number of attempts
+#define TIMEOUT 1  // seconds
 
 #define BIG_PACKET_DATA_SIZE   1024
 #define SMALL_PACKET_DATA_SIZE 128
@@ -38,12 +37,19 @@ typedef enum
 
 } YModemTransferStates;
 
-void YModem_Init(YModem* modem, InterfaceRead readFunc, InterfaceWrite writeFunc)
+void YModem_Init(YModem* modem, InterfaceRead readFunc, InterfaceWrite writeFunc, Sleep waitFunc)
 {
 	modem->Read	 = readFunc;
 	modem->Write = writeFunc;
+	modem->Wait	 = waitFunc;
 }
 
-YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc) { return OK; }
+YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
+{
+	uint8_t retriesRemaining = RETRIES;
+	uint8_t controlByte;
+
+	return OK;
+}
 
 YModemReturn YModem_Transmit(YModem* modem, FileRead readFunc, uint32_t size) { return OK; }
