@@ -12,7 +12,8 @@ typedef void (*Sleep)(uint16_t timeout);
 typedef enum {
 	OK,
 	TIMEOUT,
-	CANCLED
+	CANCLED,
+	UNKNOWN_STATE
 } YModemReturn;
 
 typedef struct
