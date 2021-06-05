@@ -53,7 +53,7 @@ static bool receiveTimeout(YModem* modem, uint8_t* buff, uint32_t recvLen)
 	uint32_t timeDelta = 0;
 	while (recved != recvLen && timeDelta < TIMEOUT)
 	{
-		recved	  = modem->Read(buff, recvLen - recved);
+		recved += modem->Read(&buff[recved], recvLen - recved);
 		timeDelta = modem->Time() - start;
 	}
 
@@ -80,7 +80,7 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 	uint32_t	  blockCounter;
 	uint16_t	  dataLen = 0;
 	uint8_t		  buffer[DATA_SIZE + sizeof(PacketHeader) + sizeof(uint16_t)];
-	PacketHeader* header = buffer;
+	PacketHeader* header = (PacketHeader*)buffer;
 	uint8_t*	  data	 = &buffer[HEADER_SIZE];
 	uint16_t*	  crc;
 
@@ -92,14 +92,14 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 			case INIT:
 				controlByte	 = C;
 				blockCounter = 0;
-				transfer = FILENAME;
+				transfer	 = FILENAME;
 				modem->Write(&controlByte, 1);
 				state = WAIT_HEADER;
 				break;
 
 			case WAIT_HEADER:
 				header->Type = C;
-				if (receiveTimeout(modem, header, HEADER_SIZE))
+				if (receiveTimeout(modem, (uint8_t*)header, HEADER_SIZE))
 				{
 					dataLen = header->Type == STX ? LARGE_PACKET_BYTES : SMALL_PACKET_BYTES;
 					state	= WAIT_DATA;
@@ -116,9 +116,9 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 				break;
 
 			case WAIT_DATA:
-				if (receiveTimeout(modem, data, dataLen))
+				if (receiveTimeout(modem, (uint8_t*)data, dataLen))
 				{
-					crc	  = &data[dataLen];
+					crc	  = (uint16_t*)&data[dataLen];
 					state = WAIT_CRC;
 				}
 				else
@@ -126,7 +126,7 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 				break;
 
 			case WAIT_CRC:
-				if (receiveTimeout(modem, crc, CRC_SIZE))
+				if (receiveTimeout(modem, (uint8_t*)crc, CRC_SIZE))
 				{
 					// TODO: Check CRC and block counters - if fail send NACK
 					state = SEND_ACK;
@@ -143,10 +143,11 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 				break;
 
 			case SEND_ACK:
+				blockCounter++;
 				if (transfer == FILENAME)
 				{
 					// TODO: capture filename and size
-					transfer= DATA;
+					transfer = DATA;
 				}
 				else if (transfer == DATA)
 				{
