@@ -14,8 +14,7 @@ typedef enum
 	SUCC,
 	FAIL,
 	TIMEOUT,
-	CANCLED,
-	UNKNOWN_STATE
+	CANCLE
 } YModemReturn;
 
 typedef struct
