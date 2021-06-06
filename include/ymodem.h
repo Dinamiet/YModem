@@ -11,7 +11,8 @@ typedef uint32_t (*Timestamp)();
 
 typedef enum
 {
-	OK,
+	SUCC,
+	FAIL,
 	TIMEOUT,
 	CANCLED,
 	UNKNOWN_STATE
