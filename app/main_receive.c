@@ -17,25 +17,25 @@ uint32_t getCurrentTime()
 	return seconds * 1000;
 }
 
-uint8_t interfaceRead(uint8_t* buff, uint32_t maxLen)
+uint16_t interfaceRead(uint8_t* buff, uint16_t maxLen)
 {
 	usleep(1000);
 	return read(fileReadBuffer, buff, maxLen);
 }
 
-uint8_t interfaceWrite(uint8_t* buff, uint32_t len)
+uint16_t interfaceWrite(uint8_t* buff, uint16_t len)
 {
-	uint8_t retval= write(fileWriteBuffer, buff, len);
+	uint16_t retval= write(fileWriteBuffer, buff, len);
 	return retval;
 }
 
-uint8_t fileWrite(char* fileName, uint8_t* buff, uint32_t len)
+uint16_t fileWrite(char* fileName, uint8_t* buff, uint16_t len)
 {
 	FILE* output = fopen(fileName, "wb");
 	if (output == NULL)
 		return 0;
 
-	uint8_t retval= fwrite(buff, 1, len, output);
+	uint16_t retval= fwrite(buff, 1, len, output);
 	fclose(output);
 	return retval;
 }

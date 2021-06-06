@@ -28,7 +28,7 @@
 
 static bool receiveTimeout(YModem* modem, uint8_t* buff, uint32_t recvLen)
 {
-	uint32_t recved	   = 0;
+	uint16_t recved	   = 0;
 	uint32_t start	   = modem->Time();
 	uint32_t timeDelta = 0;
 	while (recved != recvLen && timeDelta < TIMEOUT_MS)
@@ -40,7 +40,7 @@ static bool receiveTimeout(YModem* modem, uint8_t* buff, uint32_t recvLen)
 	return recved == recvLen;
 }
 
-static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum, uint32_t* dataSize)
+static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum, uint16_t* dataSize)
 {
 	uint16_t crc;
 
@@ -98,9 +98,9 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	return SUCC;
 }
 
-static YModemReturn receiveFileName(YModem* modem, char* fileName, uint32_t* fileSize, uint8_t* buff, uint8_t blockNum)
+static YModemReturn receiveFileName(YModem* modem, char* fileName, uint16_t* fileSize, uint8_t* buff, uint8_t blockNum)
 {
-	uint32_t dataSize= 0;
+	uint16_t dataSize= 0;
 	YModemReturn returnValue= receivePacket(modem, buff, blockNum, &dataSize);
 
 	if (returnValue == SUCC)
@@ -113,9 +113,9 @@ static YModemReturn receiveFileName(YModem* modem, char* fileName, uint32_t* fil
 	return returnValue;
 }
 
-static YModemReturn receiveData(YModem* modem, char* fileName, FileWrite writeFunc, uint32_t* remainingData, uint8_t* buff, uint8_t blockNum)
+static YModemReturn receiveData(YModem* modem, char* fileName, FileWrite writeFunc, uint16_t* remainingData, uint8_t* buff, uint8_t blockNum)
 {
-	uint32_t dataSize= 0;
+	uint16_t dataSize= 0;
 	YModemReturn returnValue= receivePacket(modem, buff, blockNum, &dataSize);
 
 	if (returnValue == SUCC)
@@ -163,8 +163,8 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 	} state = START;
 	uint8_t buff[DATA_SIZE];
 	char		 fileName[FILE_NAME];
-	uint32_t	 remainingData = 0;
-	uint32_t	 retriesLeft   = MAX_RETRIES;
+	uint16_t	 remainingData = 0;
+	uint8_t	 retriesLeft   = MAX_RETRIES;
 	YModemReturn returnValue   = SUCC;
 	uint8_t blockNum= 0;
 	uint8_t controlByte = 0;
