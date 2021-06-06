@@ -64,7 +64,7 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 			*dataSize = SMALL_PACKET_BYTES;
 			break;
 
-		default: // Unknown controll byte
+		default: // Unknown control byte
 			return TIMEOUT;
 			break;
 	}
@@ -276,6 +276,8 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 				break;
 
 			case CANCLED:
+				returnValue = CANCLE;
+				state		= END;
 				break;
 
 			case END:
