@@ -1,11 +1,12 @@
 #include "ymodem.h"
 
+#include "crc16.h"
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "crc16.h"
+#include <endian.h>
 
 #define STX 0x02 // 1024 byte data block
 #define SOH 0x01 // 128 byte data block
@@ -22,9 +23,6 @@
 #define FILE_NAME		   32
 #define LARGE_PACKET_BYTES 1024
 #define SMALL_PACKET_BYTES 128
-
-#define HEADER_SIZE sizeof(PacketHeader)
-#define CRC_SIZE	2
 
 #define MIN(x, y) (x > y ? y : x)
 
@@ -67,7 +65,7 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 			*dataSize = SMALL_PACKET_BYTES;
 			break;
 
-		default: // Unknown control byte
+		default:									// Unknown control byte
 			receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
 			return TIMEOUT;
 			break;
@@ -95,6 +93,7 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	{
 		return TIMEOUT;
 	}
+	crc= be16toh(crc);
 	uint16_t calculatedCRC = CRC16_Calculate(buff, *dataSize);
 	if (calculatedCRC ^ crc)
 	{
