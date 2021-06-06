@@ -53,6 +53,7 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	switch (buff[0])
 	{
 		case CAN:
+			receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
 			return CANCLE;
 			break;
 
@@ -65,6 +66,7 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 			break;
 
 		default: // Unknown control byte
+			receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
 			return TIMEOUT;
 			break;
 	}
@@ -76,6 +78,7 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	}
 	if (buff[0] != blockNum && buff[1] != blockNumComplement)
 	{
+		receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
 		return FAIL;
 	}
 
@@ -93,6 +96,7 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	uint16_t calculatedCRC = crc ^ crc; // TODO: Calculate actual CRC
 	if (calculatedCRC)
 	{
+		receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
 		return FAIL;
 	}
 
@@ -141,6 +145,7 @@ static YModemReturn receiveFileEnd(YModem* modem, uint8_t* buff)
 		return SUCC;
 	}
 
+	receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
 	return FAIL;
 }
 
