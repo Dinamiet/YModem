@@ -1,11 +1,10 @@
 #include "ymodem.h"
 
+#include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
-#include <fcntl.h>
-
 
 int fileWriteBuffer;
 int fileReadBuffer;
@@ -25,7 +24,7 @@ uint16_t interfaceRead(uint8_t* buff, uint16_t maxLen)
 
 uint16_t interfaceWrite(uint8_t* buff, uint16_t len)
 {
-	uint16_t retval= write(fileWriteBuffer, buff, len);
+	uint16_t retval = write(fileWriteBuffer, buff, len);
 	return retval;
 }
 
@@ -35,7 +34,7 @@ uint16_t fileWrite(char* fileName, uint8_t* buff, uint16_t len)
 	if (output == NULL)
 		return 0;
 
-	uint16_t retval= fwrite(buff, 1, len, output);
+	uint16_t retval = fwrite(buff, 1, len, output);
 	fclose(output);
 	return retval;
 }
@@ -43,7 +42,7 @@ uint16_t fileWrite(char* fileName, uint8_t* buff, uint16_t len)
 int main()
 {
 	fileWriteBuffer = open("/tmp/write", O_WRONLY | O_NONBLOCK);
-	fileReadBuffer = open("/tmp/read", O_RDONLY | O_NONBLOCK);
+	fileReadBuffer	= open("/tmp/read", O_RDONLY | O_NONBLOCK);
 	if (fileWriteBuffer == 0 || fileReadBuffer == 0)
 	{
 		return 1;
