@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "crc16.h"
+
 #define STX 0x02 // 1024 byte data block
 #define SOH 0x01 // 128 byte data block
 #define EOT 0x04 // End of transfer
@@ -93,8 +95,8 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	{
 		return TIMEOUT;
 	}
-	uint16_t calculatedCRC = crc ^ crc; // TODO: Calculate actual CRC
-	if (calculatedCRC)
+	uint16_t calculatedCRC = CRC16_Calculate(buff, *dataSize);
+	if (calculatedCRC ^ crc)
 	{
 		receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
 		return FAIL;

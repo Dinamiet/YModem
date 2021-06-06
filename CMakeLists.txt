@@ -38,4 +38,7 @@ target_sources(
         src/ymodem.c
 )
 
+add_subdirectory(extern/ChecksumHash)
+target_link_libraries(${PROJECT_NAME} PRIVATE ChecksumHash)
+
 endif()
