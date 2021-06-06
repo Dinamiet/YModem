@@ -19,6 +19,7 @@ uint32_t getCurrentTime()
 
 uint8_t interfaceRead(uint8_t* buff, uint32_t maxLen)
 {
+	usleep(1000);
 	return read(fileReadBuffer, buff, maxLen);
 }
 
