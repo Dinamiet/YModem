@@ -260,7 +260,6 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 					case CANCLED:
 						state = CANCLED;
 				}
-				printf("%X ", buff[0]);
 				break;
 
 			case CANCLED:
