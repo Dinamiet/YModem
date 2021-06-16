@@ -3,10 +3,10 @@
 
 #include <stdint.h>
 
-typedef uint16_t (*InterfaceRead)(uint8_t* buff, uint16_t maxLen);
-typedef uint16_t (*InterfaceWrite)(uint8_t* buff, uint16_t len);
-typedef uint16_t (*FileRead)(char* fileName, uint8_t* buff, uint16_t maxLen);
-typedef uint16_t (*FileWrite)(char* fileName, uint8_t* buff, uint16_t len);
+typedef uint32_t (*InterfaceRead)(uint8_t* buff, uint32_t maxLen);
+typedef uint32_t (*InterfaceWrite)(uint8_t* buff, uint32_t len);
+typedef uint32_t (*FileRead)(char* fileName, uint8_t* buff, uint32_t maxLen);
+typedef uint32_t (*FileWrite)(char* fileName, uint8_t* buff, uint32_t len);
 typedef uint32_t (*Timestamp)();
 
 typedef enum

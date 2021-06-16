@@ -103,7 +103,7 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	return SUCC;
 }
 
-static YModemReturn receiveFileName(YModem* modem, char* fileName, uint16_t* fileSize, uint8_t* buff, uint8_t blockNum)
+static YModemReturn receiveFileName(YModem* modem, char* fileName, uint32_t* fileSize, uint8_t* buff, uint8_t blockNum)
 {
 	uint16_t	 dataSize	 = 0;
 	YModemReturn returnValue = receivePacket(modem, buff, blockNum, &dataSize);
@@ -118,7 +118,7 @@ static YModemReturn receiveFileName(YModem* modem, char* fileName, uint16_t* fil
 	return returnValue;
 }
 
-static YModemReturn receiveData(YModem* modem, char* fileName, FileWrite writeFunc, uint16_t* remainingData, uint8_t* buff, uint8_t blockNum)
+static YModemReturn receiveData(YModem* modem, char* fileName, FileWrite writeFunc, uint32_t* remainingData, uint8_t* buff, uint8_t blockNum)
 {
 	uint16_t	 dataSize	 = 0;
 	YModemReturn returnValue = receivePacket(modem, buff, blockNum, &dataSize);
@@ -169,7 +169,7 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 	} state = START;
 	uint8_t		 buff[DATA_SIZE];
 	char		 fileName[FILE_NAME];
-	uint16_t	 remainingData = 0;
+	uint32_t	 remainingData = 0;
 	uint8_t		 retriesLeft   = MAX_RETRIES;
 	YModemReturn returnValue   = SUCC;
 	uint8_t		 blockNum	   = 0;
