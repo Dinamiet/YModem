@@ -67,7 +67,7 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	{
 		return TIMEOUT;
 	}
-	crc= be16toh(crc);
+	crc					   = be16toh(crc);
 	uint16_t calculatedCRC = CRC16_Calculate(buff, *dataSize);
 	if (calculatedCRC ^ crc)
 	{

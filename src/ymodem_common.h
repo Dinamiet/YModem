@@ -1,11 +1,10 @@
+#include "crc16.h"
 #include "ymodem.h"
 
-#include "crc16.h"
-
+#include <endian.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <endian.h>
 
 #define STX 0x02 // 1024 byte data block
 #define SOH 0x01 // 128 byte data block
