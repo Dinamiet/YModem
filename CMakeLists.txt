@@ -35,7 +35,9 @@ target_sources(
     PUBLIC  # All public source and header files listed here
         include/ymodem.h
     PRIVATE # All private source and header files listed here
-        src/ymodem.c
+        src/ymodem_common.h
+        src/ymodem_receive.c
+        src/ymodem_transmit.c
 )
 
 add_subdirectory(extern/ChecksumHash)
