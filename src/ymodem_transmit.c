@@ -117,7 +117,11 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], uint32_t sizes[],
 				if (fileIndex < numFiles)
 					sendFileName(modem, fileNames[fileIndex], sizes[fileIndex], buff, blockNum);
 				else
+				{
 					sendDone(modem, buff, blockNum);
+					state= END;
+					break;
+				}
 
 				switch (waitAck(modem))
 				{
