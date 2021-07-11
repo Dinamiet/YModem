@@ -47,7 +47,7 @@ target_sources(
         src/ymodem_transmit.c
 )
 
-add_subdirectory(extern/ChecksumHash)
+add_subdirectory(lib/ChecksumHash)
 target_link_libraries(${PROJECT_NAME} PRIVATE ChecksumHash)
 
 endif()

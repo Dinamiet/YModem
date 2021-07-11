@@ -1,4 +1,4 @@
-[submodule "extern/ChecksumHash"]
-	path = extern/ChecksumHash
+[submodule "lib/ChecksumHash"]
+	path = lib/ChecksumHash
 	url = ../checksumhash.git
 	branch = master
