@@ -5,7 +5,23 @@ cmake_minimum_required(VERSION 3.20.0)
 set(EXECUTABLE_TARGET "${PROJECT_NAME}_receive")
 add_executable(${EXECUTABLE_TARGET})
 
-target_compile_options(${EXECUTABLE_TARGET} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+target_compile_options(
+    ${EXECUTABLE_TARGET}
+    PRIVATE
+        "-Wall"
+        "-Wextra"
+        "-Wpedantic"
+        "-Werror"
+        "-Wshadow"
+        "-Wdouble-promotion"
+        "-Wformat=2"
+        "-Wformat-security"
+        "-Wformat-truncation"
+        "-Wundef"
+        "-fno-common"
+        # "-Wconversion"
+        "-Wpadded"
+)
 
 target_sources(
     ${EXECUTABLE_TARGET}
@@ -30,7 +46,23 @@ add_test(
 set(EXECUTABLE_TARGET "${PROJECT_NAME}_transmit")
 add_executable(${EXECUTABLE_TARGET})
 
-target_compile_options(${EXECUTABLE_TARGET} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+target_compile_options(
+    ${EXECUTABLE_TARGET}
+    PRIVATE
+        "-Wall"
+        "-Wextra"
+        "-Wpedantic"
+        "-Werror"
+        "-Wshadow"
+        "-Wdouble-promotion"
+        "-Wformat=2"
+        "-Wformat-security"
+        "-Wformat-truncation"
+        "-Wundef"
+        "-fno-common"
+        # "-Wconversion"
+        "-Wpadded"
+)
 
 target_sources(
     ${EXECUTABLE_TARGET}
