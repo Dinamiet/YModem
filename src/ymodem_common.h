@@ -1,7 +1,6 @@
 #include "crc16.h"
 #include "ymodem.h"
 
-#include <endian.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,3 +22,5 @@
 #define SMALL_PACKET_BYTES 128
 
 #define MIN(x, y) (x > y ? y : x)
+
+#define FLIP_ENDIAN_16(x) ((x << 8) | (x >> 8))

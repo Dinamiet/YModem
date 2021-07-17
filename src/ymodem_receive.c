@@ -67,7 +67,11 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	{
 		return TIMEOUT;
 	}
-	crc					   = be16toh(crc);
+
+	#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	crc					   = FLIP_ENDIAN_16(crc);
+	#endif
+
 	uint16_t calculatedCRC = CRC16_Calculate(buff, *dataSize);
 	if (calculatedCRC ^ crc)
 	{
