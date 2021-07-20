@@ -42,7 +42,9 @@ static void sendPacket(YModem* modem, uint8_t* buff, uint16_t packetSize, uint8_
 	modem->Write(buff, packetSize); // Send Data
 
 	uint16_t crc = CRC16_Calculate(buff, packetSize);
-	crc			 = htobe16(crc);
+	#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	crc					   = FLIP_ENDIAN_16(crc);
+	#endif
 	modem->Write((uint8_t*)&crc, 2); // Send CRC
 }
 
