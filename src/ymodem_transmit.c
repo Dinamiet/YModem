@@ -60,7 +60,7 @@ static void sendFileName(YModem* modem, char* fileName, uint32_t fileSize, uint8
 	memset(buff, 0, SMALL_PACKET_BYTES);
 	memcpy(buff, fileName, fileNameLength);
 
-	sprintf((char*)&buff[fileNameLength + 1], "%d", fileSize);
+	sprintf((char*)&buff[fileNameLength + 1], "%d", (int)fileSize);
 	sendPacket(modem, buff, SMALL_PACKET_BYTES, blockNum);
 }
 
