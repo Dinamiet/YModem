@@ -2,7 +2,7 @@
 #define __YMODEM_H__
 
 #include <stdint.h>
-#include <stdint.h>
+#include <stddef.h>
 
 typedef size_t (*InterfaceRead)(void* buff, size_t size);
 typedef size_t (*InterfaceWrite)(void* buff, size_t size);
