@@ -23,4 +23,4 @@
 
 #define MIN(x, y) (x > y ? y : x)
 
-#define FLIP_ENDIAN_16(x) ((x << 8) | (x >> 8))
+#define FLIP_ENDIAN_16(x) ((uint16_t)(x << 8) | (uint16_t)(x >> 8))

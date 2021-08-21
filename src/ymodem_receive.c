@@ -1,8 +1,8 @@
 #include "ymodem_common.h"
 
-static bool receiveTimeout(YModem* modem, uint8_t* buff, uint32_t recvLen)
+static bool receiveTimeout(YModem* modem, uint8_t* buff, size_t recvLen)
 {
-	uint16_t recved	   = 0;
+	size_t recved	   = 0;
 	uint32_t start	   = modem->Time();
 	uint32_t timeDelta = 0;
 	while (recved != recvLen && timeDelta < TIMEOUT_MS)
@@ -82,7 +82,7 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	return SUCC;
 }
 
-static YModemReturn receiveFileName(YModem* modem, char* fileName, uint32_t* fileSize, uint8_t* buff, uint8_t blockNum)
+static YModemReturn receiveFileName(YModem* modem, char* fileName, size_t* fileSize, void* buff, uint8_t blockNum)
 {
 	uint16_t	 dataSize	 = 0;
 	YModemReturn returnValue = receivePacket(modem, buff, blockNum, &dataSize);
@@ -91,20 +91,20 @@ static YModemReturn receiveFileName(YModem* modem, char* fileName, uint32_t* fil
 	{
 		strcpy(fileName, (char*)buff);
 		char* sizeString = (char*)buff + strlen(fileName) + 1;
-		*fileSize		 = atoi(sizeString);
+		*fileSize		 = (size_t)atoi(sizeString);
 	}
 
 	return returnValue;
 }
 
-static YModemReturn receiveData(YModem* modem, char* fileName, FileWrite writeFunc, uint32_t* remainingData, uint8_t* buff, uint8_t blockNum)
+static YModemReturn receiveData(YModem* modem, char* fileName, FileWrite writeFunc, size_t* remainingData, void* buff, uint8_t blockNum)
 {
 	uint16_t	 dataSize	 = 0;
 	YModemReturn returnValue = receivePacket(modem, buff, blockNum, &dataSize);
 
 	if (returnValue == SUCC)
 	{
-		dataSize = MIN(dataSize, *remainingData);
+		dataSize = (uint16_t)MIN(dataSize, *remainingData);
 		writeFunc(fileName, buff, dataSize);
 		*remainingData -= dataSize;
 	}
@@ -128,13 +128,6 @@ static YModemReturn receiveFileEnd(YModem* modem, uint8_t* buff)
 	return FAIL;
 }
 
-void YModem_Init(YModem* modem, InterfaceRead readFunc, InterfaceWrite writeFunc, Timestamp timeFunc)
-{
-	modem->Read	 = readFunc;
-	modem->Write = writeFunc;
-	modem->Time	 = timeFunc;
-}
-
 YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 {
 	enum
@@ -148,7 +141,7 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 	} state = START;
 	uint8_t		 buff[DATA_SIZE];
 	char		 fileName[FILE_NAME];
-	uint32_t	 remainingData = 0;
+	size_t	 remainingData = 0;
 	uint8_t		 retriesLeft   = MAX_RETRIES;
 	YModemReturn returnValue   = SUCC;
 	uint8_t		 blockNum	   = 0;

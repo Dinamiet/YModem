@@ -54,20 +54,20 @@ static void sendDone(YModem* modem, uint8_t* buff, uint8_t blockNum)
 	sendPacket(modem, buff, SMALL_PACKET_BYTES, blockNum);
 }
 
-static void sendFileName(YModem* modem, char* fileName, uint32_t fileSize, uint8_t* buff, uint8_t blockNum)
+static void sendFileName(YModem* modem, char* fileName, size_t fileSize, void* buff, uint8_t blockNum)
 {
-	uint8_t fileNameLength = strlen(fileName);
+	size_t fileNameLength = strlen(fileName);
 	memset(buff, 0, SMALL_PACKET_BYTES);
 	memcpy(buff, fileName, fileNameLength);
 
-	sprintf((char*)&buff[fileNameLength + 1], "%d", (int)fileSize);
+	sprintf((char*)buff + fileNameLength + 1, "%d", (int)fileSize);
 	sendPacket(modem, buff, SMALL_PACKET_BYTES, blockNum);
 }
 
-static uint16_t sendData(YModem* modem, char* fileName, FileRead readFunc, uint8_t* buff, uint32_t offset, uint32_t remainingData, uint8_t blockNum)
+static size_t sendData(YModem* modem, char* fileName, FileRead readFunc, void* buff, size_t offset, size_t remainingData, uint8_t blockNum)
 {
-	uint32_t maxRead   = MIN(remainingData, LARGE_PACKET_BYTES);
-	uint32_t readBytes = readFunc(fileName, buff, offset, maxRead);
+	size_t maxRead   = (size_t)MIN(remainingData, LARGE_PACKET_BYTES);
+	size_t readBytes = readFunc(fileName, buff, offset, maxRead);
 	sendPacket(modem, buff, readBytes > SMALL_PACKET_BYTES ? LARGE_PACKET_BYTES : SMALL_PACKET_BYTES, blockNum);
 	return readBytes;
 }
@@ -78,7 +78,7 @@ static void sendFileEnd(YModem* modem)
 	modem->Write(&byte, 1);
 }
 
-YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], uint32_t sizes[], uint8_t numFiles, FileRead readFunc)
+YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], uint8_t numFiles, FileRead readFunc)
 {
 	enum
 	{
@@ -90,12 +90,12 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], uint32_t sizes[],
 		END
 	} state = START;
 	uint8_t		 buff[DATA_SIZE];
-	uint32_t	 remainingData = 0;
+	size_t	 remainingData = 0;
 	uint8_t		 retriesLeft   = MAX_RETRIES;
 	YModemReturn returnValue   = SUCC;
 	uint8_t		 blockNum	   = 0;
 	uint8_t		 fileIndex	   = 0;
-	uint16_t	 sentbytes;
+	size_t	 sentbytes;
 
 	while (state != END)
 	{
