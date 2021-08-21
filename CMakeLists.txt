@@ -7,6 +7,8 @@ project(
     YModem
 )
 
+if (NOT TARGET ${PROJECT_NAME}) # Only configure if not already configured
+
 add_library(
     ${PROJECT_NAME}
     STATIC
@@ -61,3 +63,5 @@ target_sources(
 
 add_subdirectory(lib/ChecksumHash)
 target_link_libraries(${PROJECT_NAME} PRIVATE ChecksumHash)
+
+endif()
