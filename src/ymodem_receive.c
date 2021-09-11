@@ -2,7 +2,7 @@
 
 static bool receiveTimeout(YModem* modem, uint8_t* buff, size_t recvLen)
 {
-	size_t recved	   = 0;
+	size_t	 recved	   = 0;
 	uint32_t start	   = modem->Time();
 	uint32_t timeDelta = 0;
 	while (recved != recvLen && timeDelta < TIMEOUT_MS)
@@ -68,9 +68,9 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 		return TIMEOUT;
 	}
 
-	#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-	crc					   = FLIP_ENDIAN_16(crc);
-	#endif
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	crc = FLIP_ENDIAN_16(crc);
+#endif
 
 	uint16_t calculatedCRC = CRC16_Calculate(buff, *dataSize);
 	if (calculatedCRC ^ crc)
@@ -141,7 +141,7 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 	} state = START;
 	uint8_t		 buff[DATA_SIZE];
 	char		 fileName[FILE_NAME];
-	size_t	 remainingData = 0;
+	size_t		 remainingData = 0;
 	uint8_t		 retriesLeft   = MAX_RETRIES;
 	YModemReturn returnValue   = SUCC;
 	uint8_t		 blockNum	   = 0;

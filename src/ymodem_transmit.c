@@ -42,9 +42,9 @@ static void sendPacket(YModem* modem, uint8_t* buff, uint16_t packetSize, uint8_
 	modem->Write(buff, packetSize); // Send Data
 
 	uint16_t crc = CRC16_Calculate(buff, packetSize);
-	#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-	crc					   = FLIP_ENDIAN_16(crc);
-	#endif
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	crc = FLIP_ENDIAN_16(crc);
+#endif
 	modem->Write((uint8_t*)&crc, 2); // Send CRC
 }
 
@@ -66,7 +66,7 @@ static void sendFileName(YModem* modem, char* fileName, size_t fileSize, void* b
 
 static size_t sendData(YModem* modem, char* fileName, FileRead readFunc, void* buff, size_t offset, size_t remainingData, uint8_t blockNum)
 {
-	size_t maxRead   = (size_t)MIN(remainingData, LARGE_PACKET_BYTES);
+	size_t maxRead	 = (size_t)MIN(remainingData, LARGE_PACKET_BYTES);
 	size_t readBytes = readFunc(fileName, buff, offset, maxRead);
 	sendPacket(modem, buff, readBytes > SMALL_PACKET_BYTES ? LARGE_PACKET_BYTES : SMALL_PACKET_BYTES, blockNum);
 	return readBytes;
@@ -90,12 +90,12 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 		END
 	} state = START;
 	uint8_t		 buff[DATA_SIZE];
-	size_t	 remainingData = 0;
+	size_t		 remainingData = 0;
 	uint8_t		 retriesLeft   = MAX_RETRIES;
 	YModemReturn returnValue   = SUCC;
 	uint8_t		 blockNum	   = 0;
 	uint8_t		 fileIndex	   = 0;
-	size_t	 sentbytes;
+	size_t		 sentbytes;
 
 	while (state != END)
 	{
@@ -121,7 +121,7 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 				else
 				{
 					sendDone(modem, buff, blockNum);
-					state= END;
+					state = END;
 					break;
 				}
 
@@ -137,7 +137,7 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 					case CAN:
 						state = CANCLED;
 						break;
-					default: //NAK or timeout
+					default: // NAK or timeout
 						if (!retriesLeft--)
 						{
 							returnValue = TIMEOUT;
@@ -160,7 +160,7 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 					case CAN:
 						state = CANCLED;
 						break;
-					default: //NAK or timeout
+					default: // NAK or timeout
 						if (!retriesLeft--)
 						{
 							returnValue = TIMEOUT;
@@ -182,7 +182,7 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 					case CAN:
 						state = CANCLED;
 						break;
-					default: //NAK or timeout
+					default: // NAK or timeout
 						if (!retriesLeft--)
 						{
 							returnValue = TIMEOUT;
