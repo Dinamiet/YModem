@@ -7,7 +7,7 @@ static bool    waitStart(YModem* modem);
 static uint8_t waitAck(YModem* modem);
 static void    sendPacket(YModem* modem, uint8_t* buff, uint16_t packetSize, uint8_t blockNum);
 static void    sendDone(YModem* modem, uint8_t* buff, uint8_t blockNum);
-static void    sendFileName(YModem* modem, char* fileName, size_t fileSize, void* buff, uint8_t blockNum);
+static void    sendFileInfo(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum);
 static size_t  sendData(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum);
 static void    sendFileEnd(YModem* modem);
 
@@ -61,13 +61,13 @@ static void sendDone(YModem* modem, uint8_t* buff, uint8_t blockNum)
 	sendPacket(modem, buff, SMALL_PACKET_BYTES, blockNum);
 }
 
-static void sendFileName(YModem* modem, char* fileName, size_t fileSize, void* buff, uint8_t blockNum)
+static void sendFileInfo(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum)
 {
-	size_t fileNameLength = strlen(fileName);
+	size_t fileNameLength = strlen(file->Name);
 	memset(buff, 0, SMALL_PACKET_BYTES);
-	memcpy(buff, fileName, fileNameLength);
+	memcpy(buff, file->Name, fileNameLength);
 
-	sprintf((char*)buff + fileNameLength + 1, "%d", (int)fileSize);
+	sprintf((char*)buff + fileNameLength + 1, "%d", (int)file->Size);
 	sendPacket(modem, buff, SMALL_PACKET_BYTES, blockNum);
 }
 
@@ -124,7 +124,7 @@ YModemReturn YModem_Transmit(YModem* modem, YModemFile* files)
 
 			case FILENAME:
 				if (currentFile->Name)
-					sendFileName(modem, currentFile->Name, currentFile->Size, buff, blockNum);
+					sendFileInfo(modem, currentFile, buff, blockNum);
 				else
 				{
 					sendDone(modem, buff, blockNum);
