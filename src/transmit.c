@@ -1,11 +1,12 @@
-#include "ymodem_common.h"
+#include "common.h"
+#include "ymodem.h"
 
 #include <stdio.h>
 
 static bool waitStart(YModem* modem)
 {
-	uint8_t	 byte	   = 0;
-	uint32_t start	   = modem->Time();
+	uint8_t  byte      = 0;
+	uint32_t start     = modem->Time();
 	uint32_t timeDelta = 0;
 	while (byte != C && timeDelta < TIMEOUT_MS)
 	{
@@ -18,8 +19,8 @@ static bool waitStart(YModem* modem)
 
 static uint8_t waitAck(YModem* modem)
 {
-	uint8_t	 byte	   = 0;
-	uint32_t start	   = modem->Time();
+	uint8_t  byte      = 0;
+	uint32_t start     = modem->Time();
 	uint32_t timeDelta = 0;
 	while (!byte && timeDelta < TIMEOUT_MS)
 	{
@@ -42,7 +43,7 @@ static void sendPacket(YModem* modem, uint8_t* buff, uint16_t packetSize, uint8_
 	modem->Write(buff, packetSize); // Send Data
 
 	uint16_t crc = CRC16(buff, packetSize, 0);
-	crc = BIG_ENDIAN_16(crc);
+	crc          = BIG_ENDIAN_16(crc);
 	modem->Write((uint8_t*)&crc, 2); // Send CRC
 }
 
@@ -64,7 +65,7 @@ static void sendFileName(YModem* modem, char* fileName, size_t fileSize, void* b
 
 static size_t sendData(YModem* modem, char* fileName, FileRead readFunc, void* buff, size_t offset, size_t remainingData, uint8_t blockNum)
 {
-	size_t maxRead	 = (size_t)MIN(remainingData, LARGE_PACKET_BYTES);
+	size_t maxRead   = (size_t)MIN(remainingData, LARGE_PACKET_BYTES);
 	size_t readBytes = readFunc(fileName, buff, offset, maxRead);
 	sendPacket(modem, buff, readBytes > SMALL_PACKET_BYTES ? LARGE_PACKET_BYTES : SMALL_PACKET_BYTES, blockNum);
 	return readBytes;
@@ -87,13 +88,13 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 		CANCLED,
 		END
 	} state = START;
-	uint8_t		 buff[DATA_SIZE];
-	size_t		 remainingData = 0;
-	uint8_t		 retriesLeft   = MAX_RETRIES;
+	uint8_t      buff[DATA_SIZE];
+	size_t       remainingData = 0;
+	uint8_t      retriesLeft   = MAX_RETRIES;
 	YModemReturn returnValue   = SUCC;
-	uint8_t		 blockNum	   = 0;
-	uint8_t		 fileIndex	   = 0;
-	size_t		 sentbytes;
+	uint8_t      blockNum      = 0;
+	uint8_t      fileIndex     = 0;
+	size_t       sentbytes;
 
 	while (state != END)
 	{
@@ -102,14 +103,14 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 			case START:
 				if (waitStart(modem))
 				{
-					blockNum	= 0;
+					blockNum    = 0;
 					retriesLeft = MAX_RETRIES;
-					state		= FILENAME;
+					state       = FILENAME;
 				}
 				else if (!retriesLeft--)
 				{
 					returnValue = TIMEOUT;
-					state		= END;
+					state       = END;
 				}
 				break;
 
@@ -129,8 +130,8 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 						waitStart(modem);
 						blockNum++;
 						remainingData = sizes[fileIndex];
-						retriesLeft	  = MAX_RETRIES;
-						state		  = fileIndex < numFiles ? DATA : END;
+						retriesLeft   = MAX_RETRIES;
+						state         = fileIndex < numFiles ? DATA : END;
 						break;
 					case CAN:
 						state = CANCLED;
@@ -139,7 +140,7 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 						if (!retriesLeft--)
 						{
 							returnValue = TIMEOUT;
-							state		= END;
+							state       = END;
 						}
 						break;
 				}
@@ -152,7 +153,7 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 					case ACK:
 						remainingData -= sentbytes;
 						blockNum++;
-						state		= remainingData ? DATA : FILEDONE;
+						state       = remainingData ? DATA : FILEDONE;
 						retriesLeft = MAX_RETRIES;
 						break;
 					case CAN:
@@ -162,7 +163,7 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 						if (!retriesLeft--)
 						{
 							returnValue = TIMEOUT;
-							state		= END;
+							state       = END;
 						}
 						break;
 				}
@@ -174,7 +175,7 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 				{
 					case ACK:
 						fileIndex++;
-						state		= START;
+						state       = START;
 						retriesLeft = MAX_RETRIES;
 						break;
 					case CAN:
@@ -184,7 +185,7 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 						if (!retriesLeft--)
 						{
 							returnValue = TIMEOUT;
-							state		= END;
+							state       = END;
 						}
 						break;
 				}
@@ -192,7 +193,7 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], u
 
 			case CANCLED:
 				returnValue = CANCLE;
-				state		= END;
+				state       = END;
 				break;
 
 			case END:

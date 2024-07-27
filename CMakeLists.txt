@@ -71,10 +71,10 @@ target_sources(
 	PUBLIC
 		include/ymodem.h
 	PRIVATE
-        src/ymodem_common.h
-		src/ymodem_common.c
-        src/ymodem_receive.c
-        src/ymodem_transmit.c
+        src/common.h
+		src/init.c
+        src/receive.c
+        src/transmit.c
 )
 
 add_subdirectory(lib)

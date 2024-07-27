@@ -1,9 +1,10 @@
-#include "ymodem_common.h"
+#include "common.h"
+#include "ymodem.h"
 
 static bool receiveTimeout(YModem* modem, uint8_t* buff, size_t recvLen)
 {
-	size_t	 recved	   = 0;
-	uint32_t start	   = modem->Time();
+	size_t   recved    = 0;
+	uint32_t start     = modem->Time();
 	uint32_t timeDelta = 0;
 	while (recved != recvLen && timeDelta < TIMEOUT_MS)
 	{
@@ -17,7 +18,7 @@ static bool receiveTimeout(YModem* modem, uint8_t* buff, size_t recvLen)
 static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum, uint16_t* dataSize)
 {
 	uint16_t crc;
-	uint8_t	 blockNumComplement = ~blockNum;
+	uint8_t  blockNumComplement = ~blockNum;
 
 	// Handle Frame Control
 	if (!receiveTimeout(modem, buff, 1))
@@ -39,7 +40,7 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 			*dataSize = SMALL_PACKET_BYTES;
 			break;
 
-		default:									// Unknown control byte
+		default:                                    // Unknown control byte
 			receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
 			return TIMEOUT;
 			break;
@@ -82,14 +83,14 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 
 static YModemReturn receiveFileName(YModem* modem, char* fileName, size_t* fileSize, void* buff, uint8_t blockNum)
 {
-	uint16_t	 dataSize	 = 0;
+	uint16_t     dataSize    = 0;
 	YModemReturn returnValue = receivePacket(modem, buff, blockNum, &dataSize);
 
 	if (returnValue == SUCC)
 	{
 		strcpy(fileName, (char*)buff);
 		char* sizeString = (char*)buff + strlen(fileName) + 1;
-		*fileSize		 = (size_t)atoi(sizeString);
+		*fileSize        = (size_t)atoi(sizeString);
 	}
 
 	return returnValue;
@@ -97,7 +98,7 @@ static YModemReturn receiveFileName(YModem* modem, char* fileName, size_t* fileS
 
 static YModemReturn receiveData(YModem* modem, char* fileName, FileWrite writeFunc, size_t* remainingData, void* buff, uint8_t blockNum)
 {
-	uint16_t	 dataSize	 = 0;
+	uint16_t     dataSize    = 0;
 	YModemReturn returnValue = receivePacket(modem, buff, blockNum, &dataSize);
 
 	if (returnValue == SUCC)
@@ -137,20 +138,20 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 		CANCLED,
 		END
 	} state = START;
-	uint8_t		 buff[DATA_SIZE];
-	char		 fileName[FILE_NAME];
-	size_t		 remainingData = 0;
-	uint8_t		 retriesLeft   = MAX_RETRIES;
+	uint8_t      buff[DATA_SIZE];
+	char         fileName[FILE_NAME];
+	size_t       remainingData = 0;
+	uint8_t      retriesLeft   = MAX_RETRIES;
 	YModemReturn returnValue   = SUCC;
-	uint8_t		 blockNum	   = 0;
-	uint8_t		 controlByte   = 0;
+	uint8_t      blockNum      = 0;
+	uint8_t      controlByte   = 0;
 
 	while (state != END)
 	{
 		switch (state)
 		{
 			case START:
-				blockNum	= 0;
+				blockNum    = 0;
 				controlByte = C;
 				modem->Write(&controlByte, 1);
 				state = FILENAME;
@@ -180,7 +181,7 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 						else
 						{
 							returnValue = TIMEOUT;
-							state		= END;
+							state       = END;
 						}
 						controlByte = NAK;
 						modem->Write(&controlByte, 1);
@@ -209,7 +210,7 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 						if (!retriesLeft--)
 						{
 							returnValue = TIMEOUT;
-							state		= END;
+							state       = END;
 						}
 						controlByte = NAK;
 						modem->Write(&controlByte, 1);
@@ -238,7 +239,7 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 						if (!retriesLeft--)
 						{
 							returnValue = TIMEOUT;
-							state		= END;
+							state       = END;
 						}
 						controlByte = NAK;
 						modem->Write(&controlByte, 1);
@@ -252,7 +253,7 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 
 			case CANCLED:
 				returnValue = CANCLE;
-				state		= END;
+				state       = END;
 				break;
 
 			case END:
