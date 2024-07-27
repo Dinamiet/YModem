@@ -70,8 +70,8 @@ void YModem_Init(YModem* modem, const YModem_DataTransfer read, const YModem_Dat
 /**
  * Creates a new file that may be used by the protocol
  * \param name File name
- * \param size File size. When receiving files, it is ensures adequate storage space before starting the transfer. When sending files, it is the size
- * that will be sent.
+ * \param size File size. When receiving files, it ensures adequate storage space before starting the transfer. When sending files, it is the file
+ * data size to be sent.
  * \param read File data read specification. May be NULL when the file will only be used in receive operations.
  * \param write File data write specification. May be NULL when the file will only be used in transmit operations.
  * \return A File structure ready for use in YModem transfer protocol.
@@ -82,6 +82,7 @@ YModemFile YModem_CreateFile(char* name, const size_t size, const YModem_DataTra
  * Receive files over YModem protocol
  * \param modem Modem over which to receive files
  * \param files List of files to receive. List should be NULL terminated to indicate the end of the list.
+ * \return Operation status
  */
 YModemReturn YModem_Receive(const YModem* modem, const YModemFile* files);
 
@@ -89,6 +90,7 @@ YModemReturn YModem_Receive(const YModem* modem, const YModemFile* files);
  * Transmits files over YModem protocol
  * \param modem Modem over which to transmit files
  * \param files List of files to transmit. List should be NULL terminated to indicate the end of the list.
+ * \return Operation status
  */
 YModemReturn YModem_Transmit(const YModem* modem, const YModemFile* files);
 
