@@ -8,7 +8,7 @@ static uint8_t waitAck(YModem* modem);
 static void    sendPacket(YModem* modem, uint8_t* buff, uint16_t packetSize, uint8_t blockNum);
 static void    sendDone(YModem* modem, uint8_t* buff, uint8_t blockNum);
 static void    sendFileName(YModem* modem, char* fileName, size_t fileSize, void* buff, uint8_t blockNum);
-static size_t  sendData(YModem* modem, YModem_LocalRead read, void* buff, size_t remainingData, uint8_t blockNum);
+static size_t  sendData(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum);
 static void    sendFileEnd(YModem* modem);
 
 static bool waitStart(YModem* modem)
@@ -71,10 +71,10 @@ static void sendFileName(YModem* modem, char* fileName, size_t fileSize, void* b
 	sendPacket(modem, buff, SMALL_PACKET_BYTES, blockNum);
 }
 
-static size_t sendData(YModem* modem, YModem_LocalRead read, void* buff, size_t remainingData, uint8_t blockNum)
+static size_t sendData(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum)
 {
-	size_t maxRead   = (size_t)MIN(remainingData, LARGE_PACKET_BYTES);
-	size_t readBytes = read(buff, maxRead);
+	size_t maxRead   = (size_t)MIN(file->Size, LARGE_PACKET_BYTES);
+	size_t readBytes = file->Read(buff, maxRead);
 	sendPacket(modem, buff, readBytes > SMALL_PACKET_BYTES ? LARGE_PACKET_BYTES : SMALL_PACKET_BYTES, blockNum);
 	return readBytes;
 }
@@ -85,7 +85,7 @@ static void sendFileEnd(YModem* modem)
 	modem->Write(&byte, 1);
 }
 
-YModemReturn YModem_Transmit(YModem* modem, YModemFile* files, YModem_LocalRead read)
+YModemReturn YModem_Transmit(YModem* modem, YModemFile* files)
 {
 	enum
 	{
@@ -155,7 +155,7 @@ YModemReturn YModem_Transmit(YModem* modem, YModemFile* files, YModem_LocalRead 
 				break;
 
 			case DATA:
-				sentbytes = sendData(modem, read, buff, remainingData, blockNum);
+				sentbytes = sendData(modem, currentFile, buff, blockNum);
 				switch (waitAck(modem))
 				{
 					case ACK:

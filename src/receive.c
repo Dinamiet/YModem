@@ -4,7 +4,7 @@
 static bool         receiveTimeout(YModem* modem, uint8_t* buff, size_t recvLen);
 static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum, uint16_t* dataSize);
 static YModemReturn receiveFileInfo(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum);
-static YModemReturn receiveData(YModem* modem, YModem_LocalWrite write, size_t* remainingData, void* buff, uint8_t blockNum);
+static YModemReturn receiveData(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum);
 static YModemReturn receiveFileEnd(YModem* modem, uint8_t* buff);
 
 static bool receiveTimeout(YModem* modem, uint8_t* buff, size_t recvLen)
@@ -102,16 +102,15 @@ static YModemReturn receiveFileInfo(YModem* modem, YModemFile* file, void* buff,
 	return returnValue;
 }
 
-static YModemReturn receiveData(YModem* modem, YModem_LocalWrite write, size_t* remainingData, void* buff, uint8_t blockNum)
+static YModemReturn receiveData(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum)
 {
 	uint16_t     dataSize    = 0;
 	YModemReturn returnValue = receivePacket(modem, buff, blockNum, &dataSize);
 
 	if (returnValue == YMODEM_SUCCESS)
 	{
-		dataSize = (uint16_t)MIN(dataSize, *remainingData);
-		write(buff, dataSize);
-		*remainingData -= dataSize;
+		dataSize = (uint16_t)MIN(dataSize, file->Size);
+		file->Size -= file->Write(buff, dataSize);
 	}
 
 	return returnValue;
@@ -133,7 +132,7 @@ static YModemReturn receiveFileEnd(YModem* modem, uint8_t* buff)
 	return YMODEM_FAIL;
 }
 
-YModemReturn YModem_Receive(YModem* modem, YModemFile* files, YModem_LocalWrite write)
+YModemReturn YModem_Receive(YModem* modem, YModemFile* files)
 {
 	enum
 	{
@@ -211,7 +210,7 @@ YModemReturn YModem_Receive(YModem* modem, YModemFile* files, YModem_LocalWrite 
 				break;
 
 			case DATA:
-				switch (receiveData(modem, write, &currentFile.Size, buff, blockNum))
+				switch (receiveData(modem, &currentFile, buff, blockNum))
 				{
 					case YMODEM_SUCCESS:
 						blockNum++;

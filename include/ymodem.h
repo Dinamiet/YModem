@@ -20,8 +20,10 @@ typedef enum _YModemReturn_
 
 typedef struct _YModemFile_
 {
-	char*  Name;
-	size_t Size;
+	char*             Name;
+	size_t            Size;
+	YModem_LocalRead  Read;
+	YModem_LocalWrite Write;
 } YModemFile;
 
 typedef struct _YModem_
@@ -32,7 +34,7 @@ typedef struct _YModem_
 } YModem;
 
 void         YModem_Init(YModem* modem, YModem_RemoteRead read, YModem_RemoteWrite write, YModem_Time time);
-YModemReturn YModem_Receive(YModem* modem, YModemFile* files, YModem_LocalWrite write);
-YModemReturn YModem_Transmit(YModem* modem, YModemFile* files, YModem_LocalRead read);
+YModemReturn YModem_Receive(YModem* modem, YModemFile* files);
+YModemReturn YModem_Transmit(YModem* modem, YModemFile* files);
 
 #endif

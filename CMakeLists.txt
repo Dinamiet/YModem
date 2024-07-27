@@ -75,6 +75,7 @@ target_sources(
 		src/init.c
         src/receive.c
         src/transmit.c
+		src/file.c
 )
 
 add_subdirectory(lib)
