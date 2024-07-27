@@ -1,4 +1,4 @@
-#include "crc16.h"
+#include "checksums.h"
 #include "ymodem.h"
 
 #include <stdbool.h>

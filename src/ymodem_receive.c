@@ -70,7 +70,7 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 
 	crc = BIG_ENDIAN_16(crc);
 
-	uint16_t calculatedCRC = CRC16_Calculate(buff, *dataSize);
+	uint16_t calculatedCRC = CRC16(buff, *dataSize, 0);
 	if (calculatedCRC ^ crc)
 	{
 		receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
