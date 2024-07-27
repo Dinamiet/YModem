@@ -145,10 +145,10 @@ YModemReturn YModem_Receive(const YModem* modem, const YModemFile* files)
 	} state = START;
 	uint8_t      buff[DATA_SIZE];
 	char         fileName[FILE_NAME];
-	uint8_t      retriesLeft   = MAX_RETRIES;
-	YModemReturn returnValue   = YMODEM_SUCCESS;
-	uint8_t      blockNum      = 0;
-	uint8_t      controlByte   = 0;
+	uint8_t      retriesLeft = MAX_RETRIES;
+	YModemReturn returnValue = YMODEM_SUCCESS;
+	uint8_t      blockNum    = 0;
+	uint8_t      controlByte = 0;
 	YModemFile   currentFile;
 	size_t       receivingSize = 0;
 
