@@ -1,8 +1,8 @@
 #include "ymodem.h"
 
-void YModem_Init(YModem* modem, InterfaceRead readFunc, InterfaceWrite writeFunc, Timestamp timeFunc)
+void YModem_Init(YModem* modem, YModem_RemoteRead read, YModem_RemoteWrite write, YModem_Time time)
 {
-	modem->Read  = readFunc;
-	modem->Write = writeFunc;
-	modem->Time  = timeFunc;
+	modem->Read  = read;
+	modem->Write = write;
+	modem->Time  = time;
 }

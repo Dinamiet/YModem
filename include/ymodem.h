@@ -1,32 +1,32 @@
-#ifndef __YMODEM_H__
-#define __YMODEM_H__
+#ifndef _YMODEM_H_
+#define _YMODEM_H_
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
-typedef size_t (*InterfaceRead)(void* buff, size_t size);
-typedef size_t (*InterfaceWrite)(void* buff, size_t size);
-typedef size_t (*FileRead)(char* fileName, void* buff, size_t offset, size_t size);
-typedef size_t (*FileWrite)(char* fileName, void* buff, size_t size);
-typedef uint32_t (*Timestamp)();
+typedef size_t (*YModem_RemoteRead)(void* buff, size_t size);
+typedef size_t (*YModem_RemoteWrite)(void* buff, size_t size);
+typedef size_t (*YModem_LocalRead)(void* buff, size_t size);
+typedef size_t (*YModem_LocalWrite)(void* buff, size_t size);
+typedef uint32_t (*YModem_Time)();
 
 typedef enum
 {
-	SUCC,
-	FAIL,
-	TIMEOUT,
-	CANCLE
+	YMODEM_SUCCESS,
+	YMODEM_FAIL,
+	YMODEM_TIMEOUT,
+	YMODEM_CANCEL,
 } YModemReturn;
 
 typedef struct
 {
-	InterfaceRead  Read;  // Read data from interface for protocol
-	InterfaceWrite Write; // Write data to interface for protocol
-	Timestamp	   Time;
+	YModem_RemoteRead  Read;  // Read data from interface for protocol
+	YModem_RemoteWrite Write; // Write data to interface for protocol
+	YModem_Time        Time;
 } YModem;
 
-void		 YModem_Init(YModem* modem, InterfaceRead readFunc, InterfaceWrite writeFunc, Timestamp timeFunc);
-YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc);
-YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], uint8_t numFiles, FileRead readFunc);
+void         YModem_Init(YModem* modem, YModem_RemoteRead read, YModem_RemoteWrite write, YModem_Time time);
+YModemReturn YModem_Receive(YModem* modem, YModem_LocalWrite write);
+YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], uint8_t numFiles, YModem_LocalRead read);
 
 #endif

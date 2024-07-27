@@ -23,13 +23,13 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	// Handle Frame Control
 	if (!receiveTimeout(modem, buff, 1))
 	{
-		return TIMEOUT;
+		return YMODEM_TIMEOUT;
 	}
 	switch (buff[0])
 	{
 		case CAN:
 			receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
-			return CANCLE;
+			return YMODEM_CANCEL;
 			break;
 
 		case STX:
@@ -42,31 +42,31 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 
 		default:                                    // Unknown control byte
 			receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
-			return TIMEOUT;
+			return YMODEM_TIMEOUT;
 			break;
 	}
 
 	// Handle block numbers
 	if (!receiveTimeout(modem, buff, 2))
 	{
-		return TIMEOUT;
+		return YMODEM_TIMEOUT;
 	}
 	if (buff[0] != blockNum && buff[1] != blockNumComplement)
 	{
 		receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
-		return FAIL;
+		return YMODEM_FAIL;
 	}
 
 	// Handle data block
 	if (!receiveTimeout(modem, buff, *dataSize))
 	{
-		return TIMEOUT;
+		return YMODEM_TIMEOUT;
 	}
 
 	// Handle CRC
 	if (!receiveTimeout(modem, (uint8_t*)&crc, 2))
 	{
-		return TIMEOUT;
+		return YMODEM_TIMEOUT;
 	}
 
 	crc = BIG_ENDIAN_16(crc);
@@ -75,10 +75,10 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	if (calculatedCRC ^ crc)
 	{
 		receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
-		return FAIL;
+		return YMODEM_FAIL;
 	}
 
-	return SUCC;
+	return YMODEM_SUCCESS;
 }
 
 static YModemReturn receiveFileName(YModem* modem, char* fileName, size_t* fileSize, void* buff, uint8_t blockNum)
@@ -86,7 +86,7 @@ static YModemReturn receiveFileName(YModem* modem, char* fileName, size_t* fileS
 	uint16_t     dataSize    = 0;
 	YModemReturn returnValue = receivePacket(modem, buff, blockNum, &dataSize);
 
-	if (returnValue == SUCC)
+	if (returnValue == YMODEM_SUCCESS)
 	{
 		strcpy(fileName, (char*)buff);
 		char* sizeString = (char*)buff + strlen(fileName) + 1;
@@ -96,15 +96,15 @@ static YModemReturn receiveFileName(YModem* modem, char* fileName, size_t* fileS
 	return returnValue;
 }
 
-static YModemReturn receiveData(YModem* modem, char* fileName, FileWrite writeFunc, size_t* remainingData, void* buff, uint8_t blockNum)
+static YModemReturn receiveData(YModem* modem, YModem_LocalWrite write, size_t* remainingData, void* buff, uint8_t blockNum)
 {
 	uint16_t     dataSize    = 0;
 	YModemReturn returnValue = receivePacket(modem, buff, blockNum, &dataSize);
 
-	if (returnValue == SUCC)
+	if (returnValue == YMODEM_SUCCESS)
 	{
 		dataSize = (uint16_t)MIN(dataSize, *remainingData);
-		writeFunc(fileName, buff, dataSize);
+		write(buff, dataSize);
 		*remainingData -= dataSize;
 	}
 
@@ -115,19 +115,19 @@ static YModemReturn receiveFileEnd(YModem* modem, uint8_t* buff)
 {
 	if (!receiveTimeout(modem, buff, 1))
 	{
-		return TIMEOUT;
+		return YMODEM_TIMEOUT;
 	}
 
 	if (buff[0] == EOT)
 	{
-		return SUCC;
+		return YMODEM_SUCCESS;
 	}
 
 	receiveTimeout(modem, buff, DATA_SIZE); // flush to ensure buffers are empty
-	return FAIL;
+	return YMODEM_FAIL;
 }
 
-YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
+YModemReturn YModem_Receive(YModem* modem, YModem_LocalWrite write)
 {
 	enum
 	{
@@ -135,14 +135,14 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 		FILENAME,
 		DATA,
 		FILEDONE,
-		CANCLED,
+		CANCELED,
 		END
 	} state = START;
 	uint8_t      buff[DATA_SIZE];
 	char         fileName[FILE_NAME];
 	size_t       remainingData = 0;
 	uint8_t      retriesLeft   = MAX_RETRIES;
-	YModemReturn returnValue   = SUCC;
+	YModemReturn returnValue   = YMODEM_SUCCESS;
 	uint8_t      blockNum      = 0;
 	uint8_t      controlByte   = 0;
 
@@ -160,7 +160,7 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 			case FILENAME:
 				switch (receiveFileName(modem, fileName, &remainingData, buff, blockNum))
 				{
-					case SUCC:
+					case YMODEM_SUCCESS:
 						blockNum++;
 						retriesLeft = MAX_RETRIES;
 						controlByte = ACK;
@@ -174,29 +174,29 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 						}
 						break;
 
-					case FAIL: // no break
-					case TIMEOUT:
+					case YMODEM_FAIL: // no break
+					case YMODEM_TIMEOUT:
 						if (retriesLeft--)
 							state = START;
 						else
 						{
-							returnValue = TIMEOUT;
+							returnValue = YMODEM_TIMEOUT;
 							state       = END;
 						}
 						controlByte = NAK;
 						modem->Write(&controlByte, 1);
 						break;
 
-					case CANCLE:
-						state = CANCLED;
+					case YMODEM_CANCEL:
+						state = CANCELED;
 						break;
 				}
 				break;
 
 			case DATA:
-				switch (receiveData(modem, fileName, writeFunc, &remainingData, buff, blockNum))
+				switch (receiveData(modem, write, &remainingData, buff, blockNum))
 				{
-					case SUCC:
+					case YMODEM_SUCCESS:
 						blockNum++;
 						retriesLeft = MAX_RETRIES;
 						controlByte = ACK;
@@ -205,19 +205,19 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 						state = remainingData ? DATA : FILEDONE;
 						break;
 
-					case FAIL: // no break
-					case TIMEOUT:
+					case YMODEM_FAIL: // no break
+					case YMODEM_TIMEOUT:
 						if (!retriesLeft--)
 						{
-							returnValue = TIMEOUT;
+							returnValue = YMODEM_TIMEOUT;
 							state       = END;
 						}
 						controlByte = NAK;
 						modem->Write(&controlByte, 1);
 						break;
 
-					case CANCLE:
-						state = CANCLED;
+					case YMODEM_CANCEL:
+						state = CANCELED;
 						break;
 				}
 				break;
@@ -225,7 +225,7 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 			case FILEDONE:
 				switch (receiveFileEnd(modem, buff))
 				{
-					case SUCC:
+					case YMODEM_SUCCESS:
 						blockNum++;
 						retriesLeft = MAX_RETRIES;
 						controlByte = ACK;
@@ -234,25 +234,25 @@ YModemReturn YModem_Receive(YModem* modem, FileWrite writeFunc)
 						state = START;
 						break;
 
-					case FAIL: // no break
-					case TIMEOUT:
+					case YMODEM_FAIL: // no break
+					case YMODEM_TIMEOUT:
 						if (!retriesLeft--)
 						{
-							returnValue = TIMEOUT;
+							returnValue = YMODEM_TIMEOUT;
 							state       = END;
 						}
 						controlByte = NAK;
 						modem->Write(&controlByte, 1);
 						break;
 
-					case CANCLE:
-						state = CANCLED;
+					case YMODEM_CANCEL:
+						state = CANCELED;
 						break;
 				}
 				break;
 
-			case CANCLED:
-				returnValue = CANCLE;
+			case CANCELED:
+				returnValue = YMODEM_CANCEL;
 				state       = END;
 				break;
 
