@@ -1,13 +1,13 @@
 #include "common.h"
 #include "ymodem.h"
 
-static bool         receiveTimeout(YModem* modem, uint8_t* buff, size_t recvLen);
-static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum, uint16_t* dataSize);
-static YModemReturn receiveFileInfo(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum);
-static YModemReturn receiveData(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum);
-static YModemReturn receiveFileEnd(YModem* modem, uint8_t* buff);
+static bool         receiveTimeout(const YModem* modem, uint8_t* buff, size_t recvLen);
+static YModemReturn receivePacket(const YModem* modem, uint8_t* buff, const uint8_t blockNum, uint16_t* dataSize);
+static YModemReturn receiveFileInfo(const YModem* modem, char* fileName, size_t* size, void* buff, const uint8_t blockNum);
+static YModemReturn receiveData(const YModem* modem, YModemFile* file, void* buff, const uint8_t blockNum);
+static YModemReturn receiveFileEnd(const YModem* modem, uint8_t* buff);
 
-static bool receiveTimeout(YModem* modem, uint8_t* buff, size_t recvLen)
+static bool receiveTimeout(const YModem* modem, uint8_t* buff, size_t recvLen)
 {
 	size_t   recved    = 0;
 	uint32_t start     = modem->Time();
@@ -21,7 +21,7 @@ static bool receiveTimeout(YModem* modem, uint8_t* buff, size_t recvLen)
 	return recved == recvLen;
 }
 
-static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum, uint16_t* dataSize)
+static YModemReturn receivePacket(const YModem* modem, uint8_t* buff, const uint8_t blockNum, uint16_t* dataSize)
 {
 	uint16_t crc;
 	uint8_t  blockNumComplement = ~blockNum;
@@ -87,22 +87,22 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	return YMODEM_SUCCESS;
 }
 
-static YModemReturn receiveFileInfo(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum)
+static YModemReturn receiveFileInfo(const YModem* modem, char* fileName, size_t* size, void* buff, const uint8_t blockNum)
 {
 	uint16_t     dataSize    = 0;
 	YModemReturn returnValue = receivePacket(modem, buff, blockNum, &dataSize);
 
 	if (returnValue == YMODEM_SUCCESS)
 	{
-		strcpy(file->Name, (char*)buff);
-		char* sizeString = (char*)buff + strlen(file->Name) + 1;
-		file->Size       = (size_t)atoi(sizeString);
+		strcpy(fileName, (char*)buff);
+		char* sizeString = (char*)buff + strlen(fileName) + 1;
+		*size            = (size_t)atoi(sizeString);
 	}
 
 	return returnValue;
 }
 
-static YModemReturn receiveData(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum)
+static YModemReturn receiveData(const YModem* modem, YModemFile* file, void* buff, const uint8_t blockNum)
 {
 	uint16_t     dataSize    = 0;
 	YModemReturn returnValue = receivePacket(modem, buff, blockNum, &dataSize);
@@ -116,7 +116,7 @@ static YModemReturn receiveData(YModem* modem, YModemFile* file, void* buff, uin
 	return returnValue;
 }
 
-static YModemReturn receiveFileEnd(YModem* modem, uint8_t* buff)
+static YModemReturn receiveFileEnd(const YModem* modem, uint8_t* buff)
 {
 	if (!receiveTimeout(modem, buff, 1))
 	{
@@ -132,7 +132,7 @@ static YModemReturn receiveFileEnd(YModem* modem, uint8_t* buff)
 	return YMODEM_FAIL;
 }
 
-YModemReturn YModem_Receive(YModem* modem, YModemFile* files)
+YModemReturn YModem_Receive(const YModem* modem, const YModemFile* files)
 {
 	enum
 	{
@@ -149,7 +149,8 @@ YModemReturn YModem_Receive(YModem* modem, YModemFile* files)
 	YModemReturn returnValue   = YMODEM_SUCCESS;
 	uint8_t      blockNum      = 0;
 	uint8_t      controlByte   = 0;
-	YModemFile   currentFile   = {.Name = fileName, .Size = 0};
+	YModemFile   currentFile;
+	size_t       receivingSize = 0;
 
 	while (state != END)
 	{
@@ -163,7 +164,7 @@ YModemReturn YModem_Receive(YModem* modem, YModemFile* files)
 				break;
 
 			case FILENAME:
-				switch (receiveFileInfo(modem, &currentFile, buff, blockNum))
+				switch (receiveFileInfo(modem, fileName, &receivingSize, buff, blockNum))
 				{
 					case YMODEM_SUCCESS:
 						blockNum++;
@@ -173,13 +174,14 @@ YModemReturn YModem_Receive(YModem* modem, YModemFile* files)
 
 						state = END;
 						// Check for valid file and size
-						YModemFile* file = files;
+						const YModemFile* file = files;
 						while (file->Name)
 						{
-							if (strcmp(currentFile.Name, file->Name) == 0)
+							if (strcmp(fileName, file->Name) == 0)
 							{
-								if (currentFile.Size <= file->Size)
+								if (receivingSize <= file->Size)
 								{
+									currentFile = *file;
 									state       = DATA;
 									controlByte = C;
 									modem->Write(&controlByte, 1);

@@ -17,8 +17,8 @@ typedef enum _YModemReturn_
 
 typedef struct _YModemFile_
 {
-	char*             Name;
-	size_t            Size;
+	const char*         Name;
+	size_t              Size;
 	YModem_DataTransfer Read;
 	YModem_DataTransfer Write;
 } YModemFile;
@@ -27,12 +27,12 @@ typedef struct _YModem_
 {
 	YModem_DataTransfer Read;  // Read data from interface for protocol
 	YModem_DataTransfer Write; // Write data to interface for protocol
-	YModem_Time        Time;
+	YModem_Time         Time;
 } YModem;
 
-void         YModem_Init(YModem* modem, YModem_DataTransfer read, YModem_DataTransfer write, YModem_Time time);
-YModemFile   YModem_CreateFile(char* name, size_t size, YModem_DataTransfer read, YModem_DataTransfer write);
-YModemReturn YModem_Receive(YModem* modem, YModemFile* files);
-YModemReturn YModem_Transmit(YModem* modem, YModemFile* files);
+void         YModem_Init(YModem* modem, const YModem_DataTransfer read, const YModem_DataTransfer write, const YModem_Time time);
+YModemFile   YModem_CreateFile(char* name, const size_t size, const YModem_DataTransfer read, const YModem_DataTransfer write);
+YModemReturn YModem_Receive(const YModem* modem, const YModemFile* files);
+YModemReturn YModem_Transmit(const YModem* modem, const YModemFile* files);
 
 #endif

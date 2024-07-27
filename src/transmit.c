@@ -3,15 +3,15 @@
 
 #include <stdio.h>
 
-static bool    waitStart(YModem* modem);
-static uint8_t waitAck(YModem* modem);
-static void    sendPacket(YModem* modem, uint8_t* buff, uint16_t packetSize, uint8_t blockNum);
-static void    sendDone(YModem* modem, uint8_t* buff, uint8_t blockNum);
-static void    sendFileInfo(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum);
-static size_t  sendData(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum);
-static void    sendFileEnd(YModem* modem);
+static bool    waitStart(const YModem* modem);
+static uint8_t waitAck(const YModem* modem);
+static void    sendPacket(const YModem* modem, uint8_t* buff, const uint16_t packetSize, const uint8_t blockNum);
+static void    sendDone(const YModem* modem, uint8_t* buff, const uint8_t blockNum);
+static void    sendFileInfo(const YModem* modem, const YModemFile* file, void* buff, const uint8_t blockNum);
+static size_t  sendData(const YModem* modem, const YModemFile* file, void* buff, const uint8_t blockNum);
+static void    sendFileEnd(const YModem* modem);
 
-static bool waitStart(YModem* modem)
+static bool waitStart(const YModem* modem)
 {
 	uint8_t  byte      = 0;
 	uint32_t start     = modem->Time();
@@ -25,7 +25,7 @@ static bool waitStart(YModem* modem)
 	return byte == C;
 }
 
-static uint8_t waitAck(YModem* modem)
+static uint8_t waitAck(const YModem* modem)
 {
 	uint8_t  byte      = 0;
 	uint32_t start     = modem->Time();
@@ -39,7 +39,7 @@ static uint8_t waitAck(YModem* modem)
 	return byte;
 }
 
-static void sendPacket(YModem* modem, uint8_t* buff, uint16_t packetSize, uint8_t blockNum)
+static void sendPacket(const YModem* modem, uint8_t* buff, const uint16_t packetSize, const uint8_t blockNum)
 {
 	uint8_t byte = packetSize == SMALL_PACKET_BYTES ? SOH : STX;
 	modem->Write(&byte, 1); // Send packet header
@@ -55,13 +55,13 @@ static void sendPacket(YModem* modem, uint8_t* buff, uint16_t packetSize, uint8_
 	modem->Write((uint8_t*)&crc, 2); // Send CRC
 }
 
-static void sendDone(YModem* modem, uint8_t* buff, uint8_t blockNum)
+static void sendDone(const YModem* modem, uint8_t* buff, const uint8_t blockNum)
 {
 	memset(buff, 0, SMALL_PACKET_BYTES);
 	sendPacket(modem, buff, SMALL_PACKET_BYTES, blockNum);
 }
 
-static void sendFileInfo(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum)
+static void sendFileInfo(const YModem* modem, const YModemFile* file, void* buff, const uint8_t blockNum)
 {
 	size_t fileNameLength = strlen(file->Name);
 	memset(buff, 0, SMALL_PACKET_BYTES);
@@ -71,7 +71,7 @@ static void sendFileInfo(YModem* modem, YModemFile* file, void* buff, uint8_t bl
 	sendPacket(modem, buff, SMALL_PACKET_BYTES, blockNum);
 }
 
-static size_t sendData(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum)
+static size_t sendData(const YModem* modem, const YModemFile* file, void* buff, const uint8_t blockNum)
 {
 	size_t maxRead   = (size_t)MIN(file->Size, LARGE_PACKET_BYTES);
 	size_t readBytes = file->Read(buff, maxRead);
@@ -79,13 +79,13 @@ static size_t sendData(YModem* modem, YModemFile* file, void* buff, uint8_t bloc
 	return readBytes;
 }
 
-static void sendFileEnd(YModem* modem)
+static void sendFileEnd(const YModem* modem)
 {
 	uint8_t byte = EOT;
 	modem->Write(&byte, 1);
 }
 
-YModemReturn YModem_Transmit(YModem* modem, YModemFile* files)
+YModemReturn YModem_Transmit(const YModem* modem, const YModemFile* files)
 {
 	enum
 	{
@@ -96,13 +96,13 @@ YModemReturn YModem_Transmit(YModem* modem, YModemFile* files)
 		CANCLED,
 		END
 	} state = START;
-	uint8_t      buff[DATA_SIZE];
-	size_t       remainingData = 0;
-	uint8_t      retriesLeft   = MAX_RETRIES;
-	YModemReturn returnValue   = YMODEM_SUCCESS;
-	uint8_t      blockNum      = 0;
-	YModemFile*  currentFile   = files;
-	size_t       sentbytes;
+	uint8_t           buff[DATA_SIZE];
+	size_t            remainingData = 0;
+	uint8_t           retriesLeft   = MAX_RETRIES;
+	YModemReturn      returnValue   = YMODEM_SUCCESS;
+	uint8_t           blockNum      = 0;
+	const YModemFile* currentFile   = files;
+	size_t            sentbytes;
 
 	while (state != END)
 	{
