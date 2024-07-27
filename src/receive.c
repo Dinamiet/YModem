@@ -127,7 +127,7 @@ static YModemReturn receiveFileEnd(YModem* modem, uint8_t* buff)
 	return YMODEM_FAIL;
 }
 
-YModemReturn YModem_Receive(YModem* modem, YModem_LocalWrite write)
+YModemReturn YModem_Receive(YModem* modem, char* fileNames[], size_t maxSizes[], YModem_LocalWrite write)
 {
 	enum
 	{
@@ -166,11 +166,20 @@ YModemReturn YModem_Receive(YModem* modem, YModem_LocalWrite write)
 						controlByte = ACK;
 						modem->Write(&controlByte, 1);
 
-						state = strlen(fileName) ? DATA : END;
-						if (state == DATA)
+						state = END;
+						// Check if valid file and size
+						for (size_t i = 0; fileNames[i]; i++)
 						{
-							controlByte = C;
-							modem->Write(&controlByte, 1);
+							if (strcmp(fileName, fileNames[i]) == 0)
+							{
+								if (remainingData <= maxSizes[i])
+								{
+									state       = DATA;
+									controlByte = C;
+									modem->Write(&controlByte, 1);
+									break;
+								}
+							}
 						}
 						break;
 
