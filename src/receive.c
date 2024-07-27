@@ -1,6 +1,12 @@
 #include "common.h"
 #include "ymodem.h"
 
+static bool         receiveTimeout(YModem* modem, uint8_t* buff, size_t recvLen);
+static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum, uint16_t* dataSize);
+static YModemReturn receiveFileName(YModem* modem, char* fileName, size_t* fileSize, void* buff, uint8_t blockNum);
+static YModemReturn receiveData(YModem* modem, YModem_LocalWrite write, size_t* remainingData, void* buff, uint8_t blockNum);
+static YModemReturn receiveFileEnd(YModem* modem, uint8_t* buff);
+
 static bool receiveTimeout(YModem* modem, uint8_t* buff, size_t recvLen)
 {
 	size_t   recved    = 0;
