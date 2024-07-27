@@ -10,7 +10,7 @@ typedef size_t (*YModem_LocalRead)(void* buff, size_t size);
 typedef size_t (*YModem_LocalWrite)(void* buff, size_t size);
 typedef uint32_t (*YModem_Time)();
 
-typedef enum
+typedef enum _YModemReturn_
 {
 	YMODEM_SUCCESS,
 	YMODEM_FAIL,
@@ -18,7 +18,13 @@ typedef enum
 	YMODEM_CANCEL,
 } YModemReturn;
 
-typedef struct
+typedef struct _YModemFile_
+{
+	char*  Name;
+	size_t Size;
+} YModemFile;
+
+typedef struct _YModem_
 {
 	YModem_RemoteRead  Read;  // Read data from interface for protocol
 	YModem_RemoteWrite Write; // Write data to interface for protocol
@@ -26,7 +32,7 @@ typedef struct
 } YModem;
 
 void         YModem_Init(YModem* modem, YModem_RemoteRead read, YModem_RemoteWrite write, YModem_Time time);
-YModemReturn YModem_Receive(YModem* modem, char* fileNames[], size_t maxSizes[], YModem_LocalWrite write);
-YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], YModem_LocalRead read);
+YModemReturn YModem_Receive(YModem* modem, YModemFile* files, YModem_LocalWrite write);
+YModemReturn YModem_Transmit(YModem* modem, YModemFile* files, YModem_LocalRead read);
 
 #endif

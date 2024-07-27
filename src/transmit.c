@@ -85,7 +85,7 @@ static void sendFileEnd(YModem* modem)
 	modem->Write(&byte, 1);
 }
 
-YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], YModem_LocalRead read)
+YModemReturn YModem_Transmit(YModem* modem, YModemFile* files, YModem_LocalRead read)
 {
 	enum
 	{
@@ -101,7 +101,7 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], Y
 	uint8_t      retriesLeft   = MAX_RETRIES;
 	YModemReturn returnValue   = YMODEM_SUCCESS;
 	uint8_t      blockNum      = 0;
-	uint8_t      fileIndex     = 0;
+	YModemFile*  currentFile   = files;
 	size_t       sentbytes;
 
 	while (state != END)
@@ -123,8 +123,8 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], Y
 				break;
 
 			case FILENAME:
-				if (fileNames[fileIndex])
-					sendFileName(modem, fileNames[fileIndex], sizes[fileIndex], buff, blockNum);
+				if (currentFile->Name)
+					sendFileName(modem, currentFile->Name, currentFile->Size, buff, blockNum);
 				else
 				{
 					sendDone(modem, buff, blockNum);
@@ -137,9 +137,9 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], Y
 					case ACK:
 						waitStart(modem);
 						blockNum++;
-						remainingData = sizes[fileIndex];
+						remainingData = currentFile->Size;
 						retriesLeft   = MAX_RETRIES;
-						state         = fileNames[fileIndex] ? DATA : END;
+						state         = currentFile->Name ? DATA : END;
 						break;
 					case CAN:
 						state = CANCLED;
@@ -182,7 +182,7 @@ YModemReturn YModem_Transmit(YModem* modem, char* fileNames[], size_t sizes[], Y
 				switch (waitAck(modem))
 				{
 					case ACK:
-						fileIndex++;
+						currentFile++;
 						state       = START;
 						retriesLeft = MAX_RETRIES;
 						break;

@@ -3,7 +3,7 @@
 
 static bool         receiveTimeout(YModem* modem, uint8_t* buff, size_t recvLen);
 static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum, uint16_t* dataSize);
-static YModemReturn receiveFileName(YModem* modem, char* fileName, size_t* fileSize, void* buff, uint8_t blockNum);
+static YModemReturn receiveFileInfo(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum);
 static YModemReturn receiveData(YModem* modem, YModem_LocalWrite write, size_t* remainingData, void* buff, uint8_t blockNum);
 static YModemReturn receiveFileEnd(YModem* modem, uint8_t* buff);
 
@@ -87,16 +87,16 @@ static YModemReturn receivePacket(YModem* modem, uint8_t* buff, uint8_t blockNum
 	return YMODEM_SUCCESS;
 }
 
-static YModemReturn receiveFileName(YModem* modem, char* fileName, size_t* fileSize, void* buff, uint8_t blockNum)
+static YModemReturn receiveFileInfo(YModem* modem, YModemFile* file, void* buff, uint8_t blockNum)
 {
 	uint16_t     dataSize    = 0;
 	YModemReturn returnValue = receivePacket(modem, buff, blockNum, &dataSize);
 
 	if (returnValue == YMODEM_SUCCESS)
 	{
-		strcpy(fileName, (char*)buff);
-		char* sizeString = (char*)buff + strlen(fileName) + 1;
-		*fileSize        = (size_t)atoi(sizeString);
+		strcpy(file->Name, (char*)buff);
+		char* sizeString = (char*)buff + strlen(file->Name) + 1;
+		file->Size       = (size_t)atoi(sizeString);
 	}
 
 	return returnValue;
@@ -133,7 +133,7 @@ static YModemReturn receiveFileEnd(YModem* modem, uint8_t* buff)
 	return YMODEM_FAIL;
 }
 
-YModemReturn YModem_Receive(YModem* modem, char* fileNames[], size_t maxSizes[], YModem_LocalWrite write)
+YModemReturn YModem_Receive(YModem* modem, YModemFile* files, YModem_LocalWrite write)
 {
 	enum
 	{
@@ -146,11 +146,11 @@ YModemReturn YModem_Receive(YModem* modem, char* fileNames[], size_t maxSizes[],
 	} state = START;
 	uint8_t      buff[DATA_SIZE];
 	char         fileName[FILE_NAME];
-	size_t       remainingData = 0;
 	uint8_t      retriesLeft   = MAX_RETRIES;
 	YModemReturn returnValue   = YMODEM_SUCCESS;
 	uint8_t      blockNum      = 0;
 	uint8_t      controlByte   = 0;
+	YModemFile   currentFile   = {.Name = fileName, .Size = 0};
 
 	while (state != END)
 	{
@@ -164,7 +164,7 @@ YModemReturn YModem_Receive(YModem* modem, char* fileNames[], size_t maxSizes[],
 				break;
 
 			case FILENAME:
-				switch (receiveFileName(modem, fileName, &remainingData, buff, blockNum))
+				switch (receiveFileInfo(modem, &currentFile, buff, blockNum))
 				{
 					case YMODEM_SUCCESS:
 						blockNum++;
@@ -173,12 +173,13 @@ YModemReturn YModem_Receive(YModem* modem, char* fileNames[], size_t maxSizes[],
 						modem->Write(&controlByte, 1);
 
 						state = END;
-						// Check if valid file and size
-						for (size_t i = 0; fileNames[i]; i++)
+						// Check for valid file and size
+						YModemFile* file = files;
+						while (file->Name)
 						{
-							if (strcmp(fileName, fileNames[i]) == 0)
+							if (strcmp(currentFile.Name, file->Name) == 0)
 							{
-								if (remainingData <= maxSizes[i])
+								if (currentFile.Size <= file->Size)
 								{
 									state       = DATA;
 									controlByte = C;
@@ -186,7 +187,8 @@ YModemReturn YModem_Receive(YModem* modem, char* fileNames[], size_t maxSizes[],
 									break;
 								}
 							}
-						}
+							file++;
+						};
 						break;
 
 					case YMODEM_FAIL: // no break
@@ -209,7 +211,7 @@ YModemReturn YModem_Receive(YModem* modem, char* fileNames[], size_t maxSizes[],
 				break;
 
 			case DATA:
-				switch (receiveData(modem, write, &remainingData, buff, blockNum))
+				switch (receiveData(modem, write, &currentFile.Size, buff, blockNum))
 				{
 					case YMODEM_SUCCESS:
 						blockNum++;
@@ -217,7 +219,7 @@ YModemReturn YModem_Receive(YModem* modem, char* fileNames[], size_t maxSizes[],
 						controlByte = ACK;
 						modem->Write(&controlByte, 1);
 
-						state = remainingData ? DATA : FILEDONE;
+						state = currentFile.Size ? DATA : FILEDONE;
 						break;
 
 					case YMODEM_FAIL: // no break
