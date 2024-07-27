@@ -34,6 +34,7 @@ typedef struct _YModem_
 } YModem;
 
 void         YModem_Init(YModem* modem, YModem_RemoteRead read, YModem_RemoteWrite write, YModem_Time time);
+YModemFile   YModem_CreateFile(char* name, size_t size, YModem_LocalRead read, YModem_LocalWrite write);
 YModemReturn YModem_Receive(YModem* modem, YModemFile* files);
 YModemReturn YModem_Transmit(YModem* modem, YModemFile* files);
 
