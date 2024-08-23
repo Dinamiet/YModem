@@ -1,6 +1,7 @@
 #include "common.h"
 #include "ymodem.h"
 
+#include <assert.h>
 #include <stdio.h>
 
 static bool    waitStart(const YModem* modem);
@@ -73,6 +74,8 @@ static void sendFileInfo(const YModem* modem, const YModemFile* file, void* buff
 
 static size_t sendData(const YModem* modem, const YModemFile* file, void* buff, const uint8_t blockNum)
 {
+	assert(file->Read != NULL);
+
 	size_t maxRead   = (size_t)MIN(file->Size, LARGE_PACKET_BYTES);
 	size_t readBytes = file->Read(buff, maxRead);
 	sendPacket(modem, buff, readBytes > SMALL_PACKET_BYTES ? LARGE_PACKET_BYTES : SMALL_PACKET_BYTES, blockNum);
@@ -87,6 +90,9 @@ static void sendFileEnd(const YModem* modem)
 
 YModemReturn YModem_Transmit(const YModem* modem, const YModemFile* files)
 {
+	assert(modem != NULL);
+	assert(files != NULL);
+
 	enum
 	{
 		START,

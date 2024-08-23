@@ -1,6 +1,8 @@
 #include "common.h"
 #include "ymodem.h"
 
+#include <assert.h>
+
 static bool         receiveTimeout(const YModem* modem, uint8_t* buff, size_t recvLen);
 static YModemReturn receivePacket(const YModem* modem, uint8_t* buff, const uint8_t blockNum, uint16_t* dataSize);
 static YModemReturn receiveFileInfo(const YModem* modem, char* fileName, size_t* size, void* buff, const uint8_t blockNum);
@@ -104,6 +106,8 @@ static YModemReturn receiveFileInfo(const YModem* modem, char* fileName, size_t*
 
 static YModemReturn receiveData(const YModem* modem, YModemFile* file, void* buff, const uint8_t blockNum)
 {
+	assert(file->Write != NULL);
+
 	uint16_t     dataSize    = 0;
 	YModemReturn returnValue = receivePacket(modem, buff, blockNum, &dataSize);
 
@@ -134,6 +138,9 @@ static YModemReturn receiveFileEnd(const YModem* modem, uint8_t* buff)
 
 YModemReturn YModem_Receive(const YModem* modem, const YModemFile* files)
 {
+	assert(modem != NULL);
+	assert(files != NULL);
+
 	enum
 	{
 		START,
