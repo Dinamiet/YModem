@@ -139,6 +139,7 @@ static YModemReturn receiveFileEnd(const YModem* modem, uint8_t* buff)
 YModemReturn YModem_Receive(const YModem* modem, const YModemFile* files)
 {
 	assert(modem != NULL);
+	assert(modem->Time != NULL);
 	assert(files != NULL);
 
 	enum

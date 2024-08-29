@@ -91,6 +91,7 @@ static void sendFileEnd(const YModem* modem)
 YModemReturn YModem_Transmit(const YModem* modem, const YModemFile* files)
 {
 	assert(modem != NULL);
+	assert(modem->Time != NULL);
 	assert(files != NULL);
 
 	enum
