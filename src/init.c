@@ -2,7 +2,7 @@
 
 #include <assert.h>
 
-void YModem_Init(YModem* modem, const YModem_DataTransfer read, const YModem_DataTransfer write, const YModem_Time time)
+void YModem_Init(YModem* modem, const YModem_DataRead read, const YModem_DataWrite write, const YModem_Time time)
 {
 	assert(modem != NULL);
 	assert(read != NULL);

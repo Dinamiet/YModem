@@ -12,12 +12,20 @@
 #include <stdint.h>
 
 /**
- * Function template to specify how to handle data.
- * \param buff Data needs to be read into or written from this buffer depending on the function usage
- * \param size The number of bytes to write, or the maximum number of bytes to read depending on the function usage
- * \return The number of bytes read or written depending on the function usage
+ * Function template to specify how to read data.
+ * \param buff Data needs to be read into this buffer depending
+ * \param size The maximum number of bytes to read
+ * \return The number of bytes read
  */
-typedef size_t (*YModem_DataTransfer)(void* buff, size_t size);
+typedef size_t (*YModem_DataRead)(void* buff, const size_t size);
+
+/**
+ * Function template to specify how to write data.
+ * \param buff Data written from this buffer
+ * \param size The number of bytes to write
+ * \return The number of bytes written
+ */
+typedef size_t (*YModem_DataWrite)(const void* buff, const size_t size);
 
 /**
  * YModem time function template
@@ -44,8 +52,8 @@ typedef struct _YModemFile_
 {
 	const char*         Name;  /** File name */
 	size_t              Size;  /** Size of the file */
-	YModem_DataTransfer Read;  /** Specification for reading data from the file */
-	YModem_DataTransfer Write; /** Specification for writing data to the file */
+	YModem_DataRead     Read;  /** Specification for reading data from the file */
+	YModem_DataWrite    Write; /** Specification for writing data to the file */
 } YModemFile;
 
 /**
@@ -53,8 +61,8 @@ typedef struct _YModemFile_
  */
 typedef struct _YModem_
 {
-	YModem_DataTransfer Read;  /** Specification for reading data from the YModem enabled interface */
-	YModem_DataTransfer Write; /** Specification for writing data to the YModem enabled interface */
+	YModem_DataRead     Read;  /** Specification for reading data from the YModem enabled interface */
+	YModem_DataWrite    Write; /** Specification for writing data to the YModem enabled interface */
 	YModem_Time         Time;  /** Specification for time keeping for YModem  */
 } YModem;
 
@@ -65,7 +73,7 @@ typedef struct _YModem_
  * \param write Modem enabled interface write specification
  * \param time Moden time keeping specification
  */
-void YModem_Init(YModem* modem, const YModem_DataTransfer read, const YModem_DataTransfer write, const YModem_Time time);
+void YModem_Init(YModem* modem, const YModem_DataRead read, const YModem_DataWrite write, const YModem_Time time);
 
 /**
  * Creates a new file that may be used by the protocol
@@ -76,7 +84,7 @@ void YModem_Init(YModem* modem, const YModem_DataTransfer read, const YModem_Dat
  * \param write File data write specification. May be NULL when the file will only be used in transmit operations.
  * \return A File structure ready for use in YModem transfer protocol.
  */
-YModemFile YModem_CreateFile(char* name, const size_t size, const YModem_DataTransfer read, const YModem_DataTransfer write);
+YModemFile YModem_CreateFile(char* name, const size_t size, const YModem_DataRead read, const YModem_DataWrite write);
 
 /**
  * Receive files over YModem protocol

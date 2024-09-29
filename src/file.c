@@ -1,6 +1,6 @@
 #include "ymodem.h"
 
-YModemFile YModem_CreateFile(char* name, const size_t size, const YModem_DataTransfer read, const YModem_DataTransfer write)
+YModemFile YModem_CreateFile(char* name, const size_t size, const YModem_DataRead read, const YModem_DataWrite write)
 {
 	YModemFile file;
 
