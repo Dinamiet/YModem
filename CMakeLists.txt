@@ -66,16 +66,15 @@ target_include_directories(
 		include
 )
 
+file(GLOB_RECURSE INCLUDE_FILES CONFIGURE_DEPENDS "include/*.h")
+file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS "src/*.c")
+
 target_sources(
 	${PROJECT_NAME}
 	PUBLIC
-		include/ymodem.h
+		${INCLUDE_FILES}
 	PRIVATE
-        src/common.h
-		src/init.c
-        src/receive.c
-        src/transmit.c
-		src/file.c
+		${SOURCE_FILES}
 )
 
 add_subdirectory(lib)
