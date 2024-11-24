@@ -2,14 +2,18 @@
 
 #include <assert.h>
 
-void YModem_Init(YModem* modem, const YModem_DataRead read, const YModem_DataWrite write, const YModem_Time time)
+void YModem_Init(
+		YModem*                         modem,
+		const YModem_DataReadInterface  read_interface,
+		const YModem_DataWriteInterface write_interface,
+		const YModem_TimeInterface      time_interface)
 {
 	assert(modem != NULL);
-	assert(read != NULL);
-	assert(write != NULL);
-	assert(time != NULL);
+	assert(read_interface != NULL);
+	assert(write_interface != NULL);
+	assert(time_interface != NULL);
 
-	modem->Read  = read;
-	modem->Write = write;
-	modem->Time  = time;
+	modem->Read  = read_interface;
+	modem->Write = write_interface;
+	modem->Time  = time_interface;
 }
