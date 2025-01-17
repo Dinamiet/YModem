@@ -6,9 +6,9 @@ set(FETCHCONTENT_QUIET OFF)
 FetchContent_Declare(
 	ChecksumHash
 	GIT_REPOSITORY
-		git@bitbucket.org:dinamiet/checksumhash.git
+		git@github.com:Dinamiet/ChecksumHash.git
 	GIT_TAG
-		development
+		main
 	SOURCE_DIR
 		${CMAKE_SOURCE_DIR}/lib/ChecksumHash
 )
