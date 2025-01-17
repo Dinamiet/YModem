@@ -1,14 +1,15 @@
-# YModem
+# YModem Library
 
-http://wiki.synchro.net/ref:ymodem
+A C library for managing Y-Modem files and transmitting data in embedded applications.
 
-## Testing RX
-mkfifo /tmp/write
-mkfifo /tmp/read
-sb -b -O -k -vvv /tmp/ymodem/build/app/YModem_receive < /tmp/write > /tmp/read
+The YModem library provides a simple and efficient way to manage Y-Modem files and transmit data in embedded applications. It includes functions for creating, reading, and writing Y-Modem files, as well as transmitting data over a interface.
 
+## Related Projects
 
-## Testing TX
-mkfifo /tmp/write
-mkfifo /tmp/read
-rb -b -c -vvv --overwrite --ymodem < /tmp/write > /tmp/read
+* [Y-Modem Protocol Documentation](http://wiki.synchro.net/ref:ymodem): Learn about the Y-Modem protocol and its application.
+
+# Building
+This project utilizes `CMake` for building and integration with other projects. Custom build configurations are recommended to simplify the process of including this library in your own projects.
+
+# Documentation
+Documentation for this project is generated using Doxygen (`CMake` target `docs`) to provide a clear and concise reference for users.
